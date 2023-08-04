@@ -34,6 +34,7 @@ int main(void) {
         } else {
             print_pids();
             wait(&status);
+            wait(&status);
         }
     }
     return 0;
