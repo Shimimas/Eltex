@@ -16,8 +16,8 @@ void sig_winch(int signo) {
     del_menu(RIGHT);
     output_windows_fill(LEFT);
     output_windows_fill(RIGHT);
-    draw_menu(2, LEFT, 0);
-    draw_menu((getmaxx(stdscr) / 2) + 1, RIGHT, 0);
+    draw_menu(2, LEFT, menu_posision[LEFT]);
+    draw_menu((getmaxx(stdscr) / 2) + 1, RIGHT, menu_posision[RIGHT]);
     wrefresh(win[RIGHT]);
     wrefresh(win[LEFT]);
 }
@@ -179,16 +179,21 @@ void draw_menu(int start_col, int idx, int menu_idx) {
 }
 
 bool new_dir() {
+    char tmp_buf[BUFFER_SIZE];
+    strcpy(tmp_buf, paths[actual_posision]);
+    strcat(tmp_buf, "/");
+    strcat(tmp_buf, namelist[actual_posision][menu_posision[actual_posision]]->d_name);
     if (namelist[actual_posision][menu_posision[actual_posision]]->d_name == ".") {
         return false;
     } else if (namelist[actual_posision][menu_posision[actual_posision]]->d_name == "..") {
         delete_last_dir();
-    } else if (opendir(namelist[actual_posision][menu_posision[actual_posision]]->d_name) == NULL) {
-        return false;
     } else {
-        strcat(paths[actual_posision], "/");
-        strcat(paths[actual_posision], namelist[actual_posision][menu_posision[actual_posision]]->d_name);
-    }
+        DIR * d_open = opendir(tmp_buf);
+        if (d_open == NULL) {
+            return false;
+        }
+        strcpy(paths[actual_posision], tmp_buf);
+    } 
     return true;
 }
 
