@@ -183,6 +183,8 @@ bool new_dir() {
         return false;
     } else if (namelist[actual_posision][menu_posision[actual_posision]]->d_name == "..") {
         delete_last_dir();
+    } else if (opendir(namelist[actual_posision][menu_posision[actual_posision]]->d_name) == NULL) {
+        return false;
     } else {
         strcat(paths[actual_posision], "/");
         strcat(paths[actual_posision], namelist[actual_posision][menu_posision[actual_posision]]->d_name);

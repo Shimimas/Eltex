@@ -3,12 +3,12 @@ obj := main.o functions.o
 src := main.c functions.c
 hdr := functions.h
 
-CFLAGS := -lncurses
+CFLAGS := -lncurses -lpanel
 
 .PHONY: clean
 
 $(bin): $(obj)
-	$(CC) $(obj) -o $(bin) $(CFLAGS) -lpanel
+	$(CC) $(obj) -o $(bin) $(CFLAGS)
 
 $(obj): $(src)
 	$(CC) $(src) -c
