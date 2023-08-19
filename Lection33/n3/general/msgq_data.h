@@ -11,6 +11,9 @@
 #define REGISTATION 0
 #define DELETE 1
 #define EXIT 2
+#define GET_ALL_ACTIVE_USERS 3
+#define END_USERS 4
+#define ADD_NEW_USER 5
 
 struct data {
     long type;
