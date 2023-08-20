@@ -2,19 +2,24 @@
 #include "../general/list.h"
 #include "../general/msgq_data.h"
 
+WINDOW * windows[WINDOWS_AMOUNT];
+char nickname[NICKNAME_SIZE];
+
 int main(void) {
     __key_t key;
     struct msgbuf message;
     int md;
     pid_t pid;
 
+    init_start_screen();
+
     pid = getpid();
     key = ftok("../server/main", 5);
     md = msgget(key, 0);
-    printf("Enter your name\n");
-    scanf("%s", message.data.mtext);
+    //printf("Enter your name\n");
+    //scanf("%s", message.data.mtext);
 
-    message.mtype = SERVER_INFORMATION;
+    /*message.mtype = SERVER_INFORMATION;
     message.data.type = REGISTATION;
     message.data.pid = pid;
 
@@ -36,5 +41,5 @@ int main(void) {
                 break;
         } 
     }
-    return 0;
+    return 0;*/
 }

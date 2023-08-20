@@ -30,7 +30,6 @@ void del_menu(int idx) {
 }
 
 void init_curses() {
-
     initscr();
     noecho();
     curs_set(0);

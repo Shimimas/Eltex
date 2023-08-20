@@ -6,6 +6,7 @@
 #include <sys/msg.h>
 #include <unistd.h>
 
+#define NICKNAME_SIZE 20
 #define BUFFER_SIZE 255
 #define SERVER_INFORMATION 1
 #define REGISTATION 0

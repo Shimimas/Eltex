@@ -60,7 +60,7 @@ void remove_list_element(struct list * ptr, struct list_element * head) {
     free(head);
 }
 
-void clear(struct list * ptr) {
+void list_clear(struct list * ptr) {
     struct list_element * head = ptr->head;
     while (head != NULL) {
         struct list_element * next_el = head->next;

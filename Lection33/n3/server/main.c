@@ -24,7 +24,7 @@ int main(void) {
 
     pthread_join(thread, (void **) &s);
 
-    clear(&clients);
+    list_clear(&clients);
     msgctl(md, IPC_RMID, NULL);
     return 0;
 }

@@ -18,7 +18,7 @@ struct list {
 
 void init(struct list * ptr);
 void push_back(struct list * ptr, void * data, size_t size);
-void clear(struct list * ptr);
+void list_clear(struct list * ptr);
 struct list_element * find(const struct list * ptr, void * goal, int (*compare)(void *, void *));
 void remove_list_element(struct list * ptr, struct list_element * head);
 
