@@ -28,6 +28,7 @@ void send_to_other(int md, struct list * clients, struct msgbuf * message, pid_t
     while(head != NULL) {
         if (pid != ((struct user *)(head->data))->pid) {
             message->mtype = ((struct user *)(head->data))->pid;
+            printf("SEND %s\n", message->data.mtext);
             msgsnd(md, (void *) message, sizeof(struct data), 0);
         }
         head = head->next;
@@ -37,9 +38,10 @@ void send_to_other(int md, struct list * clients, struct msgbuf * message, pid_t
 void get_users(int md, struct list * clients, struct msgbuf * message) {
     message->mtype = message->data.pid;
     struct list_element * head = clients->head;
-    message->data.type = GET_ALL_ACTIVE_USERS;
+    message->data.type = ADD_NEW_USER;
     while(head != NULL) {
         strcpy(message->data.mtext, ((struct user *)(head->data))->name);
+        printf("SEND %s\n", message->data.mtext);
         msgsnd(md, (void *) message, sizeof(struct data), 0);
         head = head->next;
     }

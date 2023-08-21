@@ -3,7 +3,8 @@
 #include "../general/msgq_data.h"
 
 WINDOW * windows[WINDOWS_AMOUNT];
-char nickname[NICKNAME_SIZE];
+char nickname[BUFFER_SIZE];
+struct list users;
 
 int main(void) {
     __key_t key;
@@ -12,14 +13,13 @@ int main(void) {
     pid_t pid;
 
     init_start_screen();
-
+    strcpy(message.data.mtext, nickname);
+    init_main_screen();
     pid = getpid();
     key = ftok("../server/main", 5);
     md = msgget(key, 0);
-    //printf("Enter your name\n");
-    //scanf("%s", message.data.mtext);
 
-    /*message.mtype = SERVER_INFORMATION;
+    message.mtype = SERVER_INFORMATION;
     message.data.type = REGISTATION;
     message.data.pid = pid;
 
@@ -29,17 +29,16 @@ int main(void) {
         switch (message.data.type) {
             case REGISTATION:
                 break;
-            case GET_ALL_ACTIVE_USERS:
-                printf("was user %s\n", message.data.mtext);
-                break;
             case DELETE:
                 break;
             case ADD_NEW_USER:
-                printf("add user %s\n", message.data.mtext);
+                add_user(message.data.mtext);
+                users_content_refresh();
+                message.data.type = TO_DEFAULT;
                 break;
             default:
                 break;
         } 
     }
-    return 0;*/
+    return 0;
 }
