@@ -11,6 +11,9 @@ int main(void) {
     struct msgbuf message;
     int md;
     pid_t pid;
+    pthread_t thread[2];
+    int * s;
+    struct pthread_info p_info;
 
     init_start_screen();
     strcpy(message.data.mtext, nickname);
@@ -24,21 +27,15 @@ int main(void) {
     message.data.pid = pid;
 
     msgsnd(md, (void *) &message, sizeof(struct data), 0);
-    while(1) {
-        msgrcv(md, (void *) &message, sizeof(struct data), pid, 0);
-        switch (message.data.type) {
-            case REGISTATION:
-                break;
-            case DELETE:
-                break;
-            case ADD_NEW_USER:
-                add_user(message.data.mtext);
-                users_content_refresh();
-                message.data.type = TO_DEFAULT;
-                break;
-            default:
-                break;
-        } 
-    }
+
+    p_info.md = md;
+    p_info.pid = pid;
+
+    pthread_create(&thread[WRITE], NULL, write_pthread, (void *) &p_info);
+    pthread_create(&thread[READ], NULL, read_pthread, (void *) &p_info);
+
+    pthread_join(thread[WRITE], (void **) &s);
+    pthread_join(thread[READ], (void **) &s);
+
     return 0;
 }
