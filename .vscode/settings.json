@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "functions.h": "c",
-        "stdio.h": "c",
-        "typeinfo": "c",
-        "msgq_data.h": "c",
-        "system_error": "c"
-    }
-}
