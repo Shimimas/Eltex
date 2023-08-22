@@ -16,6 +16,7 @@ void sig_winch(int signo) {
     } else {
         set_window_size(USERS_FIELD);
         users_content_refresh();
+        set_window_size(MESSAGE_FIELD);
     }
 }
 
@@ -33,22 +34,21 @@ void init_curses() {
 }
 
 void set_window_size(int window_number) {
-    int main_window_size_y;
-    int main_window_size_x;
-
-    main_window_size_y = getmaxy(stdscr);
-    main_window_size_x = getmaxx(stdscr);
     switch (window_number) {
         case INPUT_WINDOW:
-            wresize(windows[INPUT_WINDOW], main_window_size_y / 3, main_window_size_x / 3);
-            mvwin(windows[INPUT_WINDOW], main_window_size_y / 3, main_window_size_x / 3);
+            wresize(windows[INPUT_WINDOW], getmaxy(stdscr) / 3, getmaxx(stdscr) / 3);
+            mvwin(windows[INPUT_WINDOW], getmaxy(stdscr) / 3, getmaxx(stdscr) / 3);
             break;
         case INPUT_SECTION:
             wresize(windows[INPUT_SECTION], 1, getmaxx(windows[INPUT_WINDOW]) - 2);
             mvwin(windows[INPUT_SECTION], (getmaxy(stdscr) / 3) * 2 - 2, getmaxx(stdscr) / 3 + 1);
             break;
         case USERS_FIELD:
-            wresize(windows[INPUT_SECTION], getmaxy(stdscr), getmaxx(stdscr) / 3);
+            wresize(windows[USERS_FIELD], getmaxy(stdscr), getmaxx(stdscr) / 3);
+            break;
+        case MESSAGE_FIELD:
+            wresize(windows[MESSAGE_FIELD], (getmaxy(stdscr) / 5) * 4, (getmaxx(stdscr) / 3) * 2);
+            mvwin(windows[MESSAGE_FIELD], 0, getmaxx(stdscr) / 3);
             break;
         default:
             break;
@@ -75,6 +75,11 @@ void set_content(int window_number) {
             wclear(windows[USERS_FIELD]);
             box(windows[USERS_FIELD], ACS_VLINE,ACS_HLINE);
             wbkgd(windows[USERS_FIELD], COLOR_PAIR(1));
+            break;
+        case MESSAGE_FIELD:
+            wclear(windows[MESSAGE_FIELD]);
+            box(windows[MESSAGE_FIELD], ACS_VLINE,ACS_HLINE);
+            wbkgd(windows[MESSAGE_FIELD], COLOR_PAIR(1));
             break;
         default:
             break;
@@ -163,6 +168,23 @@ void init_start_screen() {
 
 void init_main_screen() {
     init_users_field();
+    init_message();
+}
+
+void init_message() {
+    int x;
+    int y;
+    int x_size;
+    int y_size;
+
+    x = getmaxx(stdscr) / 3;
+    y = 0;
+    x_size = (getmaxx(stdscr) / 3) * 2;
+    y_size = (getmaxy(stdscr) / 5) * 4;
+
+    windows[MESSAGE_FIELD] = subwin(stdscr, y_size, x_size, y, x);
+    set_content(MESSAGE_FIELD);
+    wrefresh(windows[MESSAGE_FIELD]);
 }
 
 void init_users_field() {

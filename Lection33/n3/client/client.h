@@ -39,5 +39,6 @@ void add_user(char message[BUFFER_SIZE]);
 void users_content_refresh();
 void sub_windows_clear();
 void log_print(char message[BUFFER_SIZE]);
+void init_message();
 
 #endif // __CLIENT_H_
