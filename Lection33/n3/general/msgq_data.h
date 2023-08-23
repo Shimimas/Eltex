@@ -14,16 +14,23 @@
 #define EXIT 2
 #define END_USERS 3
 #define ADD_NEW_USER 4
+#define MESSAGE 5
+#define CLIENT_DELETE 6
 
 struct data {
     long type;
-    long pid;
+    pid_t pid;
     char mtext[BUFFER_SIZE];
 };
 
 struct msgbuf {
     long mtype;
     struct data data;
+};
+
+struct user {
+    pid_t pid;
+    char name[20];
 };
 
 #endif // __MSGQ_DATA_H_

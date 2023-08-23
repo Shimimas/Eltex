@@ -29,7 +29,6 @@ void init_curses() {
     start_color();
     keypad(stdscr, 1);
     init_pair(1, COLOR_WHITE, COLOR_BLUE);
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);
     wattron(stdscr, COLOR_PAIR(0) | A_BOLD);
     wbkgd(stdscr, COLOR_PAIR(0));
     refresh();
@@ -53,8 +52,8 @@ void set_window_size(int window_number) {
             mvwin(windows[MESSAGE_FIELD], 0, getmaxx(windows[USERS_FIELD]));
             break;
         case WRITE_FIELD:
-            wresize(windows[WRITE_FIELD], getmaxy(stdscr) - getmaxy(windows[MESSAGE_FIELD]), getmaxx(stdscr) - getmaxx(windows[USERS_FIELD]));
-            mvwin(windows[WRITE_FIELD], getmaxy(windows[MESSAGE_FIELD]), getmaxx(windows[USERS_FIELD]));
+            wresize(windows[WRITE_FIELD], getmaxy(stdscr) - getmaxy(windows[MESSAGE_FIELD]) - 2, getmaxx(stdscr) - getmaxx(windows[USERS_FIELD]) - 2);
+            mvwin(windows[WRITE_FIELD], getmaxy(windows[MESSAGE_FIELD]) + 1, getmaxx(windows[USERS_FIELD]) + 1);
             break;
         default:
             break;
@@ -89,8 +88,8 @@ void set_content(int window_number) {
             break;
         case WRITE_FIELD:
             wclear(windows[WRITE_FIELD]);
-            box(windows[WRITE_FIELD], ACS_VLINE, ACS_HLINE);
-            wbkgd(windows[WRITE_FIELD], COLOR_PAIR(2));
+            wbkgd(windows[WRITE_FIELD], COLOR_PAIR(1));
+            wprintw(windows[WRITE_FIELD], "%s", write_message);
             break;
         default:
             break;
@@ -109,7 +108,7 @@ void init_input_section() {
     wrefresh(windows[INPUT_SECTION]);
 }
 
-void input_nickname() {
+void input_field(char message[BUFFER_SIZE], int window) {
     int input;
     int i;
     int x; 
@@ -117,30 +116,33 @@ void input_nickname() {
 
     echo();
     curs_set(1);
-    keypad(windows[INPUT_SECTION], 1);
-    wmove(windows[INPUT_SECTION], 0, 0);
+    keypad(windows[window], 1);
+    wmove(windows[window], 0, 0);
     i = 0;
     do {
-        input = wgetch(windows[INPUT_SECTION]);
+        input = wgetch(windows[window]);
+        curs_set(1);
         switch (input) {
+            case 410:
+                break;
             case KEY_BACKSPACE:
                 if (i > 0) {
-                    getyx(windows[INPUT_SECTION], y, x);
-                    mvwaddch(windows[INPUT_SECTION], y, x, ' ');
-                    wrefresh(windows[INPUT_SECTION]);
+                    getyx(windows[window], y, x);
+                    mvwaddch(windows[window], y, x, ' ');
+                    wrefresh(windows[window]);
                     i--;
-                    nickname[i] = '\0';
-                    wmove(windows[INPUT_SECTION], y, x);
+                    message[i] = '\0';
+                    wmove(windows[window], y, x);
                 }
                 break;
             case '\n':
                 break;
             default:
-                nickname[i++] = input;
+                message[i++] = input;
                 break;
         }
     } while(input != '\n');
-    nickname[i] = '\0';
+    message[i] = '\0';
     noecho();
     curs_set(0);
 }
@@ -150,7 +152,7 @@ void init_start_screen() {
     signal(SIGWINCH, sig_winch);
     init_input_window();
     init_input_section();
-    input_nickname();
+    input_field(nickname, INPUT_SECTION);
     delwin(windows[INPUT_SECTION]);
     delwin(windows[INPUT_WINDOW]);
     clear();
@@ -164,9 +166,10 @@ void init_main_screen() {
 }
 
 void init_write_field() {
-    windows[WRITE_FIELD] = newwin(getmaxy(stdscr) - getmaxy(windows[MESSAGE_FIELD]),
-        getmaxx(stdscr) - getmaxx(windows[USERS_FIELD]), getmaxy(windows[MESSAGE_FIELD]),
-        getmaxx(windows[USERS_FIELD]));
+    write_message[0] = '\0';
+    windows[WRITE_FIELD] = newwin(getmaxy(stdscr) - getmaxy(windows[MESSAGE_FIELD]) - 2,
+        getmaxx(stdscr) - getmaxx(windows[USERS_FIELD]) - 2, getmaxy(windows[MESSAGE_FIELD]) + 1,
+        getmaxx(windows[USERS_FIELD]) + 1);
     set_content(WRITE_FIELD);
     wrefresh(windows[WRITE_FIELD]);
 }
@@ -183,19 +186,27 @@ void init_users_field() {
     wrefresh(windows[USERS_FIELD]);
 }
 
-void add_user(char message[BUFFER_SIZE]) {
+void add_user(char message[BUFFER_SIZE], pid_t pid) {
     struct user_information u_inf;
 
     u_inf.win = subwin(windows[USERS_FIELD], 1, getmaxx(windows[USERS_FIELD]) - 2, users.size + 1, 1);
+    u_inf.pid = pid;
     strcpy(u_inf.message, message);
     push_back(&users, (void *) &u_inf, sizeof(u_inf));
 }
 
-void log_print(int x, int y, int x_size, int y_size) {
+void log_print() {
     FILE *mf;
+    struct list_element * head;
 
     mf = fopen("log.txt", "a");
-    fprintf(mf, "x = %d y = %d x_size = %d y_size = %d\n", x, y, x_size, y_size);
+
+    head = users.head;
+    while (head != NULL) {
+        fprintf(mf, "%s pid %d\n", ((struct user_information *)head->data)->message, ((struct user_information *)head->data)->pid);
+        head = head->next;
+    }
+
     fclose(mf);
 }
 
@@ -237,8 +248,36 @@ void sub_windows_clear() {
     }
 }
 
-void * write_pthread(void * data) {
+void program_close() {
+    sub_windows_clear();
+    list_clear(&users);
+    for (int i = 0; i < WINDOWS_AMOUNT; i++) {
+        delwin(windows[i]);
+    }
+    endwin();
+}
 
+void * write_pthread(void * data) {
+    struct msgbuf message;
+    struct pthread_info * p_info;
+    int flag = 0;
+
+    p_info = (struct pthread_info *) data;
+    message.mtype = SERVER_INFORMATION;
+    message.data.type = MESSAGE;
+    message.data.pid = p_info->pid;
+    do {
+        input_field(write_message, WRITE_FIELD);
+        strcpy(message.data.mtext, write_message);
+        if (strcmp(write_message, "/exit") == 0) {
+            flag = 1;
+            message.data.type = CLIENT_DELETE;
+        }
+        msgsnd(p_info->md, (void *) &message, sizeof(struct data), 0);
+    } while (flag == 0);
+    message.mtype = p_info->pid;
+    message.data.type = EXIT;
+    msgsnd(p_info->md, (void *) &message, sizeof(struct data), 0);
 }
 
 void * read_pthread(void * data) {
@@ -254,11 +293,35 @@ void * read_pthread(void * data) {
             case DELETE:
                 break;
             case ADD_NEW_USER:
-                add_user(message.data.mtext);
+                add_user(message.data.mtext, message.data.pid);
+                users_content_refresh();
+                break;
+            case EXIT:
+                program_close();
+                pthread_exit(0);
+                break;
+            case CLIENT_DELETE:
+                remove_list_element(&users, find(&users, (void *) &message.data.pid, compare));
+                log_print();
+                set_window_size(USERS_FIELD);
                 users_content_refresh();
                 break;
             default:
                 break;
-        } 
+        }
+        curs_set(0);
     }
+}
+
+int compare(void * data, void * goal) {
+    struct user_information * message;
+    pid_t * user;
+
+    message = (struct user_information *) goal;
+    user = (pid_t *) data;
+    if (message->pid == *user) {
+        delwin(message->win);
+        return 1;
+    }
+    return 0;
 }

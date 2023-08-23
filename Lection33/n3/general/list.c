@@ -33,7 +33,7 @@ void push_back(struct list * ptr, void * data, size_t size) {
 struct list_element * find(const struct list * ptr, void * goal, int (*compare)(void *, void *)) {
     struct list_element * head = ptr->head;
     while (head != NULL) {
-        if (compare(head->data, goal)) {
+        if (compare(head->data, goal) == 1) {
             return head;
         }
         head = head->next;
