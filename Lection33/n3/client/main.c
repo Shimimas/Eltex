@@ -5,6 +5,7 @@
 WINDOW * windows[WINDOWS_AMOUNT];
 char nickname[BUFFER_SIZE];
 char write_message[BUFFER_SIZE];
+char all_messages[MESSAGE_BUFFER_SIZE];
 struct list users;
 
 int main(void) {

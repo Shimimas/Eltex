@@ -35,6 +35,7 @@ extern WINDOW * windows[WINDOWS_AMOUNT];
 extern char nickname[BUFFER_SIZE];
 extern char write_message[BUFFER_SIZE];
 extern struct list users;
+extern char all_messages[MESSAGE_BUFFER_SIZE];
 
 void init_curses();
 void init_start_screen();
@@ -47,12 +48,12 @@ void init_main_screen();
 void add_user(char message[BUFFER_SIZE], pid_t pid);
 void users_content_refresh();
 void sub_windows_clear();
-void log_print();
 void init_message();
 void * read_pthread(void * data);
 void * write_pthread(void * data);
 void init_write_field();
 void program_close();
 int compare(void * data, void * goal);
+void refresh_all();
 
 #endif // __CLIENT_H_

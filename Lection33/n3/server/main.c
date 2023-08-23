@@ -2,6 +2,8 @@
 #include "../general/list.h"
 #include "../general/msgq_data.h"
 
+char all_messages[MESSAGE_BUFFER_SIZE];
+
 int main(void) {
     __key_t key;
     struct msgbuf message;

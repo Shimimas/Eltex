@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE 255
+#define MESSAGE_BUFFER_SIZE 1024
 #define TO_DEFAULT -1
 #define SERVER_INFORMATION 1
 #define REGISTATION 0
